@@ -46,7 +46,7 @@ void BadSql(string userInput)
 
 var HelloWorld = "Hello, World!";
 
-Console.WriteLine(HelloWorld.ToString());
+Console.WriteLine(HelloWorld);
 GetSumOfNumbers(10);
 void GetSumOfNumbers(int n)
 {
