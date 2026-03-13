@@ -9,11 +9,12 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
+      issues: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Apply PR template based on branch name
+      - name: Apply PR template and label based on branch name
         uses: actions/github-script@v7
         with:
           script: |
@@ -21,18 +22,55 @@ jobs:
             const fs = require('fs');
 
             let templatePath = null;
+            let label = null;
+            let labelColor = null;
+            let labelDescription = null;
 
             if (branch.startsWith('feature/')) {
               templatePath = '.github/PULL_REQUEST_TEMPLATE/feature.md';
+              label = 'feature';
+              labelColor = '0075ca';
+              labelDescription = 'New feature or enhancement';
             } else if (branch.startsWith('bugfix/')) {
               templatePath = '.github/PULL_REQUEST_TEMPLATE/bugfix.md';
+              label = 'bug';
+              labelColor = 'd73a4a';
+              labelDescription = 'Something is not working';
             } else {
               console.log(`No matching template found for branch: ${branch}`);
               return;
             }
 
-            const template = fs.readFileSync(templatePath, 'utf8');
+            // Ensure label exists in the repo, create it if not
+            try {
+              await github.rest.issues.getLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: label
+              });
+            } catch (e) {
+              if (e.status === 404) {
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label,
+                  color: labelColor,
+                  description: labelDescription
+                });
+                console.log(`Created label: ${label}`);
+              }
+            }
 
+            // Apply label to PR
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              labels: [label]
+            });
+
+            // Apply template body
+            const template = fs.readFileSync(templatePath, 'utf8');
             await github.rest.pulls.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -40,4 +78,4 @@ jobs:
               body: template
             });
 
-            console.log(`Applied template: ${templatePath}`);
+            console.log(`Applied template: ${templatePath}, label: ${label}`);
