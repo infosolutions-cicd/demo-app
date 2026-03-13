@@ -44,5 +44,19 @@ void BadSql(string userInput)
     while (reader.Read()) { /*...*/ }
 }
 
+var HelloWorld = "Hello, World!";
+
+Console.WriteLine(HelloWorld.ToString());
+GetSumOfNumbers(10);
+void GetSumOfNumbers(int n)
+{
+    int sUm = 0;
+    for (int i = 1; i <= n; i++)
+    {
+        sUm += i;
+    }
+    Console.WriteLine($"The sum of the first {n} numbers is: {sUm}");
+}
+
 
 app.Run();
