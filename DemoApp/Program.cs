@@ -44,6 +44,7 @@ void BadSql(string userInput)
     while (reader.Read()) { /*...*/ }
 }
 var fixedBug = 123;
+var anotherOne = 5;
 var HelloWorld = "Hello, World!";
 
 Console.WriteLine(HelloWorld);
