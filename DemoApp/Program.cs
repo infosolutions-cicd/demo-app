@@ -46,6 +46,7 @@ void BadSql(string userInput)
 var fixedBug = 123;
 var anotherOne = 5;
 var HelloWorld = "Hello, World!";
+var ft = 52;
 
 Console.WriteLine(HelloWorld);
 GetSumOfNumbers(10);
