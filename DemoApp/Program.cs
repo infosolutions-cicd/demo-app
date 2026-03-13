@@ -27,7 +27,7 @@ app.MapRazorComponents<App>()
 
 var yo = new MimeKit.Encodings.Base64Decoder();
 
-var secret = "PassWord124!";
+var secret = "";
 Console.WriteLine($"The secret is: {secret}");
 
 var apiKey = app.Configuration.GetValue<string>("APIKEY");
