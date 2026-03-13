@@ -43,7 +43,7 @@ void BadSql(string userInput)
     using var reader = cmd.ExecuteReader();
     while (reader.Read()) { /*...*/ }
 }
-
+var fixedBug = 123;
 var HelloWorld = "Hello, World!";
 
 Console.WriteLine(HelloWorld.ToString());
