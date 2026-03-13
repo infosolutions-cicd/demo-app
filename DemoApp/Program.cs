@@ -29,4 +29,7 @@ var yo = new MimeKit.Encodings.Base64Decoder();
 var secret = "PassWord124!";
 Console.WriteLine($"The secret is: {secret}");
 
+var apiKey = app.Configuration.GetValue<string>("APIKEY");
+Console.WriteLine("The API key is: " + apiKey);
+
 app.Run();
