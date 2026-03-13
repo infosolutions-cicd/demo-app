@@ -1,5 +1,6 @@
 ﻿using DemoApp.Components;
 using MimeKit;
+using System.Data.SqlClient;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -31,5 +32,17 @@ Console.WriteLine($"The secret is: {secret}");
 
 var apiKey = app.Configuration.GetValue<string>("APIKEY");
 Console.WriteLine("The API key is: " + apiKey);
+
+BadSql("test");
+void BadSql(string userInput)
+{
+    using var conn = new SqlConnection(app.Configuration.GetConnectionString("DefaultConnection"));
+    conn.Open();
+    // Vulnerable: concatenating untrusted input into SQL
+    var cmd = new SqlCommand("SELECT * FROM Users WHERE Name = '" + userInput + "'", conn);
+    using var reader = cmd.ExecuteReader();
+    while (reader.Read()) { /*...*/ }
+}
+
 
 app.Run();
