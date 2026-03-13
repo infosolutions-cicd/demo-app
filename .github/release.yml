@@ -8,15 +8,15 @@
     - title: 💥 Breaking Changes
       labels:
         - breaking change
+    - title: 🔒 Security Fixes
+      labels:
+        - security
     - title: 🚀 New Features
       labels:
         - feature
     - title: 🐛 Bug Fixes
       labels:
         - bug
-    - title: 🔒 Security Fixes
-      labels:
-        - security
     - title: 📦 Dependency Updates
       labels:
         - dependencies
