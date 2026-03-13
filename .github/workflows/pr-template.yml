@@ -1,0 +1,43 @@
+﻿name: Apply PR Template
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  apply-template:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Apply PR template based on branch name
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branch = context.payload.pull_request.head.ref;
+            const fs = require('fs');
+
+            let templatePath = null;
+
+            if (branch.startsWith('feature/')) {
+              templatePath = '.github/PULL_REQUEST_TEMPLATE/feature.md';
+            } else if (branch.startsWith('bugfix/')) {
+              templatePath = '.github/PULL_REQUEST_TEMPLATE/bugfix.md';
+            } else {
+              console.log(`No matching template found for branch: ${branch}`);
+              return;
+            }
+
+            const template = fs.readFileSync(templatePath, 'utf8');
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              body: template
+            });
+
+            console.log(`Applied template: ${templatePath}`);
