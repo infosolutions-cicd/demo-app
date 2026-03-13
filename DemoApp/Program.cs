@@ -1,5 +1,5 @@
-using DemoApp.Components;
-
+﻿using DemoApp.Components;
+using MimeKit;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -23,5 +23,10 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+var yo = new MimeKit.Encodings.Base64Decoder();
+
+var secret = "PassWord124!";
+Console.WriteLine($"The secret is: {secret}");
 
 app.Run();
