@@ -26,7 +26,7 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 var yo = new MimeKit.Encodings.Base64Decoder();
-
+var bg = 53;
 var secret = "";
 Console.WriteLine($"The secret is: {secret}");
 
