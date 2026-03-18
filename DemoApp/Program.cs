@@ -59,6 +59,6 @@ void GetSumOfNumbers(int n)
     }
     Console.WriteLine($"The sum of the first {n} numbers is: {sUm}");
 }
-
+#asd
 
 app.Run();
