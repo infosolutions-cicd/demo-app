@@ -1,6 +1,7 @@
 ﻿using DemoApp.Components;
 using MimeKit;
 using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -59,6 +60,6 @@ void GetSumOfNumbers(int n)
     }
     Console.WriteLine($"The sum of the first {n} numbers is: {sUm}");
 }
-#asd
+
 
 app.Run();
