@@ -82,12 +82,6 @@ jobs:
     environment: test                           # GitHub Environment
 
     steps:
-      - name: Download release package
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ needs.build.outputs.artifact-name }}
-          path: release-package
-
       - name: Transform appsettings for Test
         uses: microsoft/variable-substitution@v1
         with:
@@ -98,7 +92,7 @@ jobs:
       - name: Deploy to Test folder
         shell: pwsh
         run: |
-          $targetPath = "${{ vars.DEPLOY_PATH }}"   # e.g. C:\Deployments\test
+          $targetPath = "${{ vars.DEPLOY_PATH }}"
           Write-Host "Deploying to $targetPath ..."
 
           # Clean target
@@ -109,7 +103,7 @@ jobs:
           }
 
           # Copy artifacts
-          Copy-Item -Path "release-package\*" -Destination $targetPath -Recurse -Force
+          Copy-Item -Path "publish\*" -Destination $targetPath -Recurse -Force
           Write-Host "Deployed to TEST at $targetPath"
 
       - name: Post-deployment smoke test
@@ -118,8 +112,6 @@ jobs:
           $settingsPath = "${{ vars.DEPLOY_PATH }}\appsettings.json"
           if (Test-Path $settingsPath) {
             Write-Host "Smoke test passed “appsettings.json exists"
-            $config = Get-Content $settingsPath | ConvertFrom-Json
-            Write-Host "   Environment: $($config.AppSettings.Environment)"
           } else {
             Write-Error "Smoke test FAILED “appsettings.json not found"
             exit 1
