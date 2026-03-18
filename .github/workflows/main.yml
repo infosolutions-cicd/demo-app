@@ -1,0 +1,121 @@
+###############################################################################
+# CI â€“ Build, Package & Deploy to TEST
+# Triggered when a pull request is merged (closed + merged) into 'develop'.
+###############################################################################
+name: "CI â€“ Build & Deploy to Test"
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [develop]
+
+# Only one deploy-to-test at a time; cancel older queued runs.
+concurrency:
+  group: deploy-test
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: write          # needed for uploading artifacts
+
+jobs:
+  build:
+    if: github.event.pull_request.merged == true
+    runs-on: self-hosted                        # Windows self-hosted runner
+    outputs:
+      artifact-name: ${{ steps.set-vars.outputs.artifact_name }}
+      version: ${{ steps.set-vars.outputs.version }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Determine version
+        id: set-vars
+        shell: pwsh
+        run: |
+          $sha     = "${{ github.sha }}".Substring(0, 7)
+          $date    = Get-Date -Format "yyyyMMdd"
+          $version = "0.0.0-dev.$date.$sha"
+          $name    = "release-package-$version"
+          echo "version=$version"       >> $env:GITHUB_OUTPUT
+          echo "artifact_name=$name"    >> $env:GITHUB_OUTPUT
+          Write-Host "Version: $version"
+
+      #Replace this section with your real build steps â”€â”€
+      - name: Publish
+        run: dotnet publish -c Release -r win-x64 -o publish --self-contained false
+
+      - name: Run tests
+        shell: pwsh
+        run: |
+          Write-Host "Running tests..."
+          # Example: dotnet test --configuration Release --no-build
+          Write-Host "All tests passed"
+
+      #Upload build artifact â”€â”€
+      - name: Upload release package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.set-vars.outputs.artifact_name }}
+          path: publish/
+          retention-days: 30
+
+      #Also upload as 'latest-test' so promotion workflows can find it â”€â”€
+      - name: Upload as latest-test artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: latest-test-package
+          path: publish/
+          retention-days: 30
+          overwrite: true
+
+  #Deploy to Test 
+  deploy-test:
+    needs: build
+    runs-on: self-hosted
+    environment: test                           # GitHub Environment
+
+    steps:
+      - name: Download release package
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build.outputs.artifact-name }}
+          path: release-package
+
+      - name: Transform appsettings for Test
+        uses: microsoft/variable-substitution@v1
+        with:
+          files: 'C:\actions-runner\_work\LabPortalen.App\LabPortalen.App\LabPortalen.App\LabPortalen\labportalenapp\appsettings.json'
+        env:
+          ConnectionStrings.DefaultConnection: ${{ secrets.CONNECTION_STRING }}
+
+      - name: Deploy to Test folder
+        shell: pwsh
+        run: |
+          $targetPath = "${{ vars.DEPLOY_PATH }}"   # e.g. C:\Deployments\test
+          Write-Host "Deploying to $targetPath ..."
+
+          # Clean target
+          if (Test-Path $targetPath) {
+            Remove-Item "$targetPath\*" -Recurse -Force
+          } else {
+            New-Item -ItemType Directory -Force -Path $targetPath
+          }
+
+          # Copy artifacts
+          Copy-Item -Path "release-package\*" -Destination $targetPath -Recurse -Force
+          Write-Host "Deployed to TEST at $targetPath"
+
+      - name: Post-deployment smoke test
+        shell: pwsh
+        run: |
+          $settingsPath = "${{ vars.DEPLOY_PATH }}\appsettings.json"
+          if (Test-Path $settingsPath) {
+            Write-Host "Smoke test passed “appsettings.json exists"
+            $config = Get-Content $settingsPath | ConvertFrom-Json
+            Write-Host "   Environment: $($config.AppSettings.Environment)"
+          } else {
+            Write-Error "Smoke test FAILED “appsettings.json not found"
+            exit 1
+          }
