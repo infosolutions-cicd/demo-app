@@ -49,7 +49,7 @@ jobs:
 
       #Replace this section with your real build steps â”€â”€
       - name: Publish
-        run: dotnet publish -c Release -r win-x64 -o publish --self-contained false
+        run: dotnet publish "C:\actions-runner\_work\demo-app\demo-app\DemoApp\DemoApp.slnx" -c Release -r win-x64 -o publish --self-contained false
 
       - name: Run tests
         shell: pwsh
@@ -91,7 +91,7 @@ jobs:
       - name: Transform appsettings for Test
         uses: microsoft/variable-substitution@v1
         with:
-          files: 'C:\actions-runner\_work\LabPortalen.App\LabPortalen.App\LabPortalen.App\LabPortalen\labportalenapp\appsettings.json'
+          files: 'C:\actions-runner\_work\demo-app\demo-app\DemoApp\publish\appsettings.json'
         env:
           ConnectionStrings.DefaultConnection: ${{ secrets.CONNECTION_STRING }}
 
