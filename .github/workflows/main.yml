@@ -91,7 +91,7 @@ jobs:
       - name: Transform appsettings for Test
         uses: microsoft/variable-substitution@v1
         with:
-          files: 'C:\actions-runner\_work\demo-app\demo-app\DemoApp\publish\appsettings.json'
+          files: 'C:\actions-runner\_work\demo-app\demo-app\publish\appsettings.json'
         env:
           ConnectionStrings.DefaultConnection: ${{ secrets.CONNECTION_STRING }}
 
