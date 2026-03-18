@@ -26,7 +26,6 @@ permissions:
 
 jobs:
   build:
-    if: github.event.pull_request.merged == true
     runs-on: self-hosted                        # Windows self-hosted runner
     outputs:
       artifact-name: ${{ steps.set-vars.outputs.artifact_name }}
