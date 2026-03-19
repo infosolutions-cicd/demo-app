@@ -1,0 +1,73 @@
+###############################################################################
+# Manual Promotion – Deploy to STAGING
+# Uses workflow_dispatch so you can pick which build to promote.
+###############################################################################
+name: "Promote to Staging"
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: "Workflow Run ID that produced the test artifact (leave blank for latest develop build)"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  promote-staging:
+    runs-on: self-hosted
+    environment: staging                        # GitHub Environment with optional approval
+
+    steps:
+      - name: Download latest test package
+        uses: actions/download-artifact@v4
+        with:
+          name: latest-test-package
+          path: release-package
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ inputs.run_id || github.event.workflow_run.id }}
+        continue-on-error: true
+        id: download-specific
+
+      # Fallback: use the GitHub CLI to grab the latest artifact from develop
+      - name: Fallback – download latest artifact via CLI
+        if: steps.download-specific.outcome == 'failure'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          Write-Host "⬇️ Downloading latest test artifact via CLI..."
+          # Find the latest successful run on develop for our CI workflow
+          $runs = gh run list --workflow "ci-build-deploy-test.yml" --branch develop --status success --limit 1 --json databaseId | ConvertFrom-Json
+          if ($runs.Count -eq 0) {
+            Write-Error "No successful CI runs found on develop"
+            exit 1
+          }
+          $runId = $runs[0].databaseId
+          Write-Host "Using run ID: $runId"
+          gh run download $runId -n latest-test-package -D release-package
+
+      - name: Transform appsettings for Staging
+        uses: microsoft/variable-substitution@v1
+        with:
+          files: 'release-package\appsettings.json'
+        env:
+          ConnectionStrings.DefaultConnection: ${{ secrets.CONNECTION_STRING }}
+
+      - name: Deploy to Staging folder
+        shell: pwsh
+        run: |
+          $targetPath = "${{ vars.DEPLOY_PATH }}"
+          Write-Host "🚀 Deploying to $targetPath ..."
+
+          if (Test-Path $targetPath) {
+            Remove-Item "$targetPath\*" -Recurse -Force
+          } else {
+            New-Item -ItemType Directory -Force -Path $targetPath
+          }
+
+          Copy-Item -Path "release-package\*" -Destination $targetPath -Recurse -Force
+          Write-Host "✅ Deployed to STAGING at $targetPath"
