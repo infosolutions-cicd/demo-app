@@ -8,9 +8,10 @@ on:
   workflow_dispatch:
     inputs:
       run_id:
-        description: "Workflow Run ID that produced the test artifact (leave blank for latest develop build)"
-        required: false
+        description: "Numeric workflow run ID that uploaded the artifact"
+        required: true
         type: string
+
 
 permissions:
   contents: read
@@ -25,7 +26,8 @@ jobs:
       - name: Download latest test package
         uses: actions/download-artifact@v4
         with:
-          name: ${{ inputs.run_id || 'latest-test-package' }}
+          run-id: ${{ inputs.run_id }}
+          name: latest-test-package
         continue-on-error: true
         id: download-specific
 
