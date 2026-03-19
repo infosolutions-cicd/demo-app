@@ -25,27 +25,9 @@ jobs:
       - name: Download latest test package
         uses: actions/download-artifact@v4
         with:
-          name: inputs.run_id
+          name: ${{ inputs.run_id || 'latest-test' }}
         continue-on-error: true
         id: download-specific
-
-      # Fallback: use the GitHub CLI to grab the latest artifact from develop
-      - name: Fallback – download latest artifact via CLI
-        if: steps.download-specific.outcome == 'failure'
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          Write-Host "⬇️ Downloading latest test artifact via CLI..."
-          # Find the latest successful run on develop for our CI workflow
-          $runs = gh run list --workflow "ci-build-deploy-test.yml" --branch develop --status success --limit 1 --json databaseId | ConvertFrom-Json
-          if ($runs.Count -eq 0) {
-            Write-Error "No successful CI runs found on develop"
-            exit 1
-          }
-          $runId = $runs[0].databaseId
-          Write-Host "Using run ID: $runId"
-          gh run download $runId -n latest-test-package -D release-package
 
       - name: Transform appsettings for Staging
         uses: microsoft/variable-substitution@v1
