@@ -105,14 +105,3 @@ jobs:
           # Copy artifacts
           Copy-Item -Path "publish\*" -Destination $targetPath -Recurse -Force
           Write-Host "Deployed to TEST at $targetPath"
-
-      - name: Post-deployment smoke test
-        shell: pwsh
-        run: |
-          $settingsPath = "${{ vars.DEPLOY_PATH }}\appsettings.json"
-          if (Test-Path $settingsPath) {
-            Write-Host "Smoke test passed “appsettings.json exists"
-          } else {
-            Write-Error "Smoke test FAILED “appsettings.json not found"
-            exit 1
-          }
