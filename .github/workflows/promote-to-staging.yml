@@ -25,10 +25,7 @@ jobs:
       - name: Download latest test package
         uses: actions/download-artifact@v4
         with:
-          name: latest-test-package
-          path: release-package
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ inputs.run_id || github.event.workflow_run.id }}
+          name: inputs.run_id
         continue-on-error: true
         id: download-specific
 
