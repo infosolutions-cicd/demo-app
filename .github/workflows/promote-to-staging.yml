@@ -28,6 +28,9 @@ jobs:
         with:
           run-id: ${{ inputs.run_id }}
           name: latest-test-package
+          path: release-package                   
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+              
         continue-on-error: true
         id: download-specific
 
