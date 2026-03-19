@@ -63,7 +63,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.set-vars.outputs.artifact_name }}
-          path: publish/
           retention-days: 30
 
       #Also upload as 'latest-test' so promotion workflows can find it â”€â”€
@@ -71,7 +70,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: latest-test-package
-          path: publish/
           retention-days: 30
           overwrite: true
 
